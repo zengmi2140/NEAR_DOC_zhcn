@@ -33,11 +33,9 @@ Illia Polosukhin &nbsp;&nbsp;&nbsp;&nbsp;**Twitter:** /ilblackdragon &nbsp;&nbsp
 | Nightshade   | 夜影   |    | 
 | part   | 颗粒   | 经纠删码处理过的基本信息单位   | 
 | partition   | 分区   |    | 
+| receipt   | 收据   |    | 
 | shard   | 分片   |    | 
 | validator   | 验证人   |    | 
-
-
-
 
 
 ---
