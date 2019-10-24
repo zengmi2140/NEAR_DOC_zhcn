@@ -6,8 +6,8 @@
 原版参见 [Nightshade.pdf](https://nearprotocol.com/downloads/Nightshade.pdf)
 
 **原著：**  
-Alex Skidanov **twitter:** /AlexSkidanov  **email:** alex@nearprotocol.com  
-Illia Polosukhin **twitter:** /ilblackdragon  **email:** illia@nearprotocol.com  
+Alex Skidanov    **Twitter:** /AlexSkidanov     **Email:** alex@nearprotocol.com  
+Illia Polosukhin    **Twitter:** /ilblackdragon     **Email:** illia@nearprotocol.com  
 
 翻译：Marco  
 校对：Crypto Rose  
