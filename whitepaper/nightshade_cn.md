@@ -244,6 +244,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/fCPT6bIum9QN31Bm.png!thumbnail)
 
 **<center>图 7： 来自一个无效区块的跨分片交易</center>**
+
 <br>
 以下是应对该问题的一些简单方法：
 
@@ -279,6 +280,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/OdSA4jHDfrYn9RJq.png!thumbnail)
 
 **<center>图 10： 渔夫</center>**
+
 <br>
 这是当前提出的协议中主流的实现方法（除了那些装作不存在这种问题的协议）。然而，这种实现有两大主要缺陷：
 
@@ -332,9 +334,10 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 亟待解决的最直接问题是，区块一旦被发布是否就是可用的。一种提出的思想是，使用被称为公证人的角色，让其在分片中以比验证人更快的频率轮转。他们的工作仅仅是下载一个区块并证明他们有能力下载它的事实。他们之所以能更频繁的轮转，是因为无需下载分片的整个状态，不像验证人，后者每次轮转都要下载分片的状态，因此不能频繁轮转，如图13所示。
 
 ![图片](https://uploader.shimo.im/f/lvsxtlpRVCwlItAS.png!thumbnail)
-<br>
+
 **<center>图 13：验证人需要下载状态而不能频繁轮转</center>**
 
+<br>
 这个轻率方案的问题是，后面无法证明一个公证人是否能下载那个区块。因此，一个公证人可以选择总是证明他们能下载那个区块，甚至不用尝试获取这个区块。一个解决方案是让公证人提供某种证据或质押一定数量的代币，证明这个块被其下载过。这里讨论了该类方案的其中一种：https://ethresear.ch/t/1-bit-aggregation-friendly-custody-bonds/2236.
 
 ### 2.5.2 纠删码
@@ -346,6 +349,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/gNSxEPCN0GA20FcS.png!thumbnail)
 
 **<center>图 14：建在纠删码数据上的默克尔树</center>**
+
 <br>
 波卡和以太坊宁静都采用了基于这种思想的设计，为轻节点提供了一种方式有理由相信区块是可用的。以太坊宁静的实现在参考文献2中有详细介绍[2]。
 
@@ -356,6 +360,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/9uxnoNbYfToUXYuO.png!thumbnail)
 
 **<center>图 15：波卡的数据有效性</center>**
+
 <br>
 ### 2.5.4 长期数据有效性
 
@@ -377,6 +382,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/KLlUr6bd6hgalix8.png!thumbnail)
 
 **<center>图 16：一个（分片比较）模型，左边是分片链，右边是一个链将其区块分段</center>**
+
 <br>
 ## 3.2 共识
 
@@ -437,6 +443,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/sBB76SxkcSopVYFH.png!thumbnail)
 
 **<center>图 17：每个块包含每个分片的0到1个段，每个段都经过纠删编码。纠删码的每个颗粒都通过单颗粒消息发送给指定的出块人</center>**
+
 <br>
 ### 3.4.1 处理懒惰的出块人
 
@@ -479,6 +486,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/QKafZJklJewdMAlC.png!thumbnail)
 
 **<center>图 18：收据交易的生命周期</center>**
+
 <br>
 ### 3.6.2 应对过量的收据
 
@@ -487,6 +495,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/oFZi2mXCWxIPEhvQ.png!thumbnail)
 
 **<center>图 19：如果收据指向同一个分片，该分片可能无力处理它们</center>**
+
 <br>
 要解决这个问题，我们使用一个类似QuarkChain中使用的技术。特别的，对每个分片，最后的块B中最后一条被执行的收据所在的分片s被记录下来。当新的分片（译者注：这里应是段，原文疑为笔误）创建时，会首先从块B中遗留还未处理的收据开始执行，接着才是块B之后的区块，直到新的段被塞满为止。在正常情况下，随着负载均衡，这个过程的结果是所有收据都被执行（因此每个段中记录的都是最后一个块的最后一个分片）。然而，当负载不均衡时，如果一个特定的分片收到了过多的收据，该技术也能允许这些收据在段中交易条数有限制的前提下被处理。
 
@@ -497,6 +506,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/qaY5CwtFfiEE1JZE.png!thumbnail)
 
 **<center>图 20：延迟的收据处理</center>**
+
 <br>
 ## 3.7 段有效性
 
@@ -531,6 +541,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/jMwRWc6ornIWRliF.png!thumbnail)
 
 **<center>图 21： 在执行收据之前等待挑战时间</center>**
+
 <br>
 
 解决它的办法是，用某种方式让跨分片交易立即完成：对目的分片，不等原分片交易发布后挑战结束，立即执行收据交易。如果后面发现源段或块无效，就目的分片和源分片一起回滚（参见图22）。对于夜影的设计来说，应用该方案很自然。因为分片链不是独立的，而是由分片的段一起，发布在同一个主链区块中。如果发现任何段是无效的，包含这个段的整个块、以及构建在其上的块都被视为无效。参见图23。
@@ -571,6 +582,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/AgZAyYDGyKssyETi.png!thumbnail)
 
 **<center>图 24： 夜影中的验证人隐藏</center>**
+
 <br>
 ### 3.7.4 承诺(commit)-展示(reveal)
 
@@ -582,6 +594,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/VRTWe4njhNMdl8nH.png!thumbnail)
 
 **<center>图 25： 承诺-展示</center>**
+
 <br>
 而我们让验证人先承诺(commit)有一个验证结果（要么是一条证明段有效的消息，要么是一个无效状态转换的证明），等待一段时间，之后才能展示(reveal)实际的验证结果，如图25所示。承诺阶段和展示阶段不会重叠，因此一个懒惰的验证人无法抄袭诚实验证人。此外，如果不诚实的验证人承诺了一条证实被签段都有效的消息，而最终有一个段无效。只要这个段的无效性被公开，该验证人就无法逃避惩罚。就如我们将在3.7.5节所展示的，那种情况下，唯一不被惩罚的方式就是（在展示阶段）呈现一条包含无效状态转换证明的消息，并与自己的（在承诺阶段的）的承诺匹配。。
 
@@ -597,6 +610,7 @@ Near协议也是基于分片的。Near团队的成员包括：若干前MemSQL工
 ![图片](https://uploader.shimo.im/f/juwlLrHA8ioPzVRB.png!thumbnail)
 
 **<center>图 26：处理挑战</center>**
+
 <br>
 要注意的是，因为验证人的分派情况已公开，从验证人公开他们所分派的分片开始，直到新纪元开启，这段时间系统的安全性降低了。网络的参与者在该期间使用网络时，需要牢记这一点。
 
