@@ -13,7 +13,7 @@
 - [1 导言](#1-导言)
 - [2 背景](#2-背景)
 - [3 奖励](#3-奖励)
-- [4 交易和储存费](#4-交易和储存费)
+- [4 交易和存储费](#4-交易和存储费)
     - [4.1 价格计算与带宽](#41-价格计算与带宽)
     - [4.2 计算限制](#42-计算限制)
     - [4.3 状态存储的定价](#43-状态存储的定价)
@@ -112,7 +112,7 @@ maxCoinbase-epochFees_t & otherwise
 \tag{3}$$
 Which means, that if the total fees for a given epoch are greater than the maximum coinbase, the fees themselves provide sufficient incentive and the actual coinbase for that epoch can be zero. Otherwise, total fees will decrease inflation by the corresponding amount.
 
-# 4 交易和储存费
+# 4 交易和存储费
 Each transaction has a few different components that make up its cost: the cost for receiving and transmitting the transaction (bandwidth), the cost for processing (especially if this is a complicated state transition / smart contract) (CPU) and the cost for state storage (for keeping the information going forward).
 
 Because computation and bandwidth can be charged simultaneously on a per-transaction basis they can be combined into one scalar, usually known as a transaction fee, denoted as $txFee_{index}$.
