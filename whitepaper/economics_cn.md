@@ -61,48 +61,48 @@
 
 特别的，我们描述一个叫做“夜影”的分片设计（Skidanov and Polosukhin [4]）的细节，它以一个有效的方式解决“权益分片”的问题。
 
-Because of re-sharding, an application (or account) is not defined by the shard it is located in. This is contrasted with static sharding, where each application developer decides which shard to be deployed to. In a statically sharded system, we will observe the concentration of applications in single shard due to data and asset dependencies.
 因为重新分片的存在，一个应用（或账户）并不是由它所在的分片定义。这与静态分片相反，在那里各个应用的开发者决定部署到哪个分片。在静态分片系统，因为其数据和资产的依赖关系，我们会观察到应用在单个分片上的集中现象。
 
-For example, lots of applications would want to be in the same shard as MakerDAO to provide users a way to interact with DAI without additional overhead. This means there will be more demand for DAI on that shard and less demand on other shards. Also there will be more demands in ETH, as users of MakerDAO will need to be able to react quickly to changes in pricing to top off there Collaterized Debt Position. This all creates very perverse incentives and goes against the idea of scaling the network.
+例如，许多应用会想与MakerDAO位于同一个分片，为用户提供一种可与DAI交互且无需额外间接费用的方式。这就意味着在那个分片上会有相比其他分片更多的DAI需求。同时，也会有更多的ETH需求，因为MakerDAO的用户需要在价格变动时能快速的反应，结束他们的抵押债务头寸。这些（需求）都产生了非常执着的刺激，违背了网络扩展的想法。
 
-Because of re-balancing in dynamically sharded systems, this issue is alleviated because the incentive to ”co-locate” your application is absent.
+由于动态分片系统中的再平衡，该问题得到了缓解。因为“扎堆”部署应用的动机已不存在。
 
-To address the ”shard of stake” problem, where each shard has only a small subset of total security of the system, ”Nightshade” design splits selected validators into two groups: block producers (or collators) and ”hidden” validators.
+为了解决“权益分片”的问题，也就是每个分片只有整个系统安全性的一个小子集。“夜影”的设计中将选中的验证人分成两个组：出块人（或收集人）和“隐藏的”验证人。
 
-Block producers are responsible for receiving transactions, producing chunks, exchanging the chunks and parts of the chunks between each other while keeping data available for other parties in the system.
+出块人负责接收交易，产生段，互相间交换段以及段中的颗粒，同时保持对系统中其他各方的数据可用性。
 
-”Hidden” validators are spread among all the shards and provide security for the system by keeping block producers in check, making sure they produce correct blocks and that the data is indeed available.
+“隐藏的”验证人分布在所有的分片，检查出块人，确保他们创建正确的块，以及数据是切实可用的。以此为系统提供安全性。
 
-Because validators are hidden and do not produce blocks, e.g. there is no known assignment between validators and shards, the protocol cannot actually directly allocate rewards to validators at the moment of block production. Instead, they are rewarded for doing their work over the span of the epoch. See more details about it in section 5.2.
+因为验证人是隐藏的，也不出块。例如，在验证人额分片之间没有已知的分配关系。协议实际上无法在出块的时刻直接分配奖励给验证人。取而代之，验证人在周期的尺度上获得他们的工作奖励。详情参见5.2节。
 
-While sharded systems require (most likely different) pricing for transactions within a shard and also for cross-shard transactions, dynamic sharding allows all charges to be priced the same, removing the price distinction between crossshard and intra-shard transactions.
+尽管分片系统要求分片内的交易和跨分片的交易（大部分都是）区别定价，动态分片支持统一收费，移除了跨分片和分片内交易之间的价格差异。
 
 # 3 奖励
-In any blockchain protocol validators (or miners for Proof-of-Work) provide their resources (compute, storage, network) in exchange for a reward. These rewards are usually a combination of coinbase (new native tokens minted) and transaction fees.
+任何区块链协议中，验证人（或PoW中的矿工）提供他们的资源（算力，存储，网络），换得奖励。这些奖励通常是coinbase（铸造出的新的内置代币）与交易费的结合。
 
-As detailed above in the ”Nightshade” design, all of the logic is done on an ”epoch” level, and validators get elected and rotated every N blocks. Because of this we also define rewards per epoch. At the end of every epoch, the rewards are then distributed between Validators, Developers and the Protocol Treasury.
+在“夜影”设计中，作为上述内容的细节，所有的逻辑都在“周期”层面。每N个块，验证人被选出并轮换。因此，我们也定义了每个周期的奖励。每个周期的末尾，奖励会在验证人，开发者和协议财库之间分配。
 
-Total epoch reward can be calculated as:
+总的周期奖励如下计算：
 $$
 epochReward_t = coinbaseReward_t + epochFees_t 
 \tag{1}$$  
 
-Where $epochFees_t$ is combination of all the fees collected during the blocks of the epoch $t$, and include transaction fees and state rent. Note, that $epochFees$ do not contain part of user paid fees that were allocated to an applications directly. More details on how fees are priced and calculated is in section 4 fees.
+这里，$epochFees_t$是来自周期$t$中所有块里的费用，包括交易费和状态租金。注意：$epochFees$中不包括用户支付费用中直接归属应用的那部分。有关费用是如何定价和计算的更多细节请看 第4节 费用。
 
-Because minting new tokens effetively tax Token Holders (mostly on Users and Developers who are not actively Validators), it is generally preferred to minimize coinbase. However, too small a coinbase combined with insufficient fees can result in reducing interest for Validators to provide compute and capital required for security.
+因为铸造新的代币实际上是对代币持有者（尤其那些不是活动验证人的用户和开发者）抽税。一般来说倾向于最小化coinbase。然而，过小的coinbase加上不足的费用，可能减少验证人提供算力和资本的兴趣，而那些是安全性所需的。
 
-Bitcoin is an example, where the initial design has the coinbase halving every 4 years, with the goal to ultimately sustain the network only with fees. But due to current incentives in longest chain networks where transaction rewards go only to the block producer - there is well-known (Carlsten et al. [2]) issue with instability when the coinbase reward approaches 0.
+以比特币为例，初始设计是让coinbase每四年减半，目的是最终彻底通过费用维持网络。但由于当前最长链网络的激励机制，交易奖励只给出块人，当coinbase达到0时，存在众所周知的不稳定性问题(Carlsten et al. [2])。
 
-Thus we suggest a system that sets a ceiling for the maximum coinbase and dynamically decreases the coinbase depending on the amount of total fees in the system. This ensures a minimum epoch reward, and with growth in usage, reduces inflation.
+因此，我们建议一个系统设置一个最大coinbase作为顶，然后根据系统中总费用的数量动态减少coinbase。这样可以保证有一个最小的周期奖励，然后随着使用量的增加，减少通胀。
 
-To calculate the actual coinbase reward, we first calculate the maximum inflation per epoch:
+要计算实际的coinbase奖励，我们首先计算每个周期的最大通胀：
 $$
 maxCoinbase = totalSupply_t \times (\sqrt[numEpochsPerYear]{1+maxInflation} - 1) 
 \tag{2}$$  
-Where $totalSupply_t = initialSupply + \sum_{i=0}^{t-1}coinbaseReward_i$, meaning it is the total number of tokens in the system at a given epoch $t$.
 
-Given $maxCoinbase$, we can calculate $coinbaseReward$ for given epoch:
+这里，$totalSupply_t = initialSupply + \sum_{i=0}^{t-1}coinbaseReward_i$，意味着它是在给定周期$t$时，系统中代币的总数量。
+
+有了$maxCoinbase$，我们可以计算给定周期的$coinbaseReward$：
 $$
 coinbaseReward_t = 
 \begin{cases}
@@ -110,7 +110,9 @@ coinbaseReward_t =
 maxCoinbase-epochFees_t & otherwise
 \end{cases} 
 \tag{3}$$
-Which means, that if the total fees for a given epoch are greater than the maximum coinbase, the fees themselves provide sufficient incentive and the actual coinbase for that epoch can be zero. Otherwise, total fees will decrease inflation by the corresponding amount.
+
+意思是，如果给定周期的总费用大于coinbase的最大值，费用本身就提供了足够的激励，该周期的coinbase实际上可以为0。否则，总的费用将使通胀减少相应的数量。
+
 
 # 4 交易和存储费
 Each transaction has a few different components that make up its cost: the cost for receiving and transmitting the transaction (bandwidth), the cost for processing (especially if this is a complicated state transition / smart contract) (CPU) and the cost for state storage (for keeping the information going forward).
