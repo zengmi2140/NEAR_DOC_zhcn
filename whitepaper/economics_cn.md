@@ -304,6 +304,7 @@ NEAR已经通过开发AccessKeys功能使得采用第二和第三类模型以及
 $$
 developerReward_{index}^{account} = developerPct \times txFee_{index}^{account}
 \tag{10}$$
+
 $txFee^{account}_{index}$ 是指定 $account$在特定 $index$的上的gas费用总开销。$ developerReward $是按每个帐户的每个块分配的，因为每次合同处理交易或收据（跨片）时，它们都可以有效地结算。
 
 分配这笔钱的方法有多种，这取决于应用程序的开发人员来如何在维护应用程序的同时进行规划。
@@ -312,6 +313,9 @@ $txFee^{account}_{index}$ 是指定 $account$在特定 $index$的上的gas费用
 
 # 7 协议财库
 To fund continues development of the protocol and ecosystem we allocate $protocolPct$ percent of the epoch rewards from section 3 to the designated account. The specifics of governance and management of this account are outside of the scope of this paper.
+
+为了给协议和生态系统的持续发展提供资金，我们将按照第3节中讨论的数额为$ protocolPct $比例的周期总奖励分配给指定帐户。 该帐户的治理和管理细节不在本文讨论范围之内。
+
 $$
 protocolReward_t = protocolPct \times (coinbaaseReward_t + epochFee_t)
 \tag{11}
