@@ -328,8 +328,11 @@ $$
 
 # 参考文献
 [1] Vitalik Buterin. Blockchain resource pricing. https://github.com/ethereum/research/blob/master/papers/pricing/ethpricing.pdf, 2019.
+
 [2] Miles Carlsten, Harry Kalodner, S. Matthew Weinberg, and Arvind Narayanan. On the instability of bitcoin without the block reward. In Proceedings of the 2016 ACM SIGSAC Conference on Computer and Communications Security, CCS ’16, pages 154–167, New York, NY, USA, 2016. ACM. ISBN 978-1-4503-4139-4. doi: 10.1145/2976749.2978408. URL http://doi.acm.org/10.1145/2976749.2978408.
+
 [3] Illia Polosukhin. Staking and delegation via smart contract. https://research.nearprotocol.com/t/staking-and-delegation-via-smart-contract/43, 2019.
+
 [4] Alex Skidanov and Illia Polosukhin. Nightshade: Near protocol sharding design. https://nearprotocol.com/downloads/Nightshade.pdf, 2019.
 
 # A 常量
