@@ -6,21 +6,28 @@
 <center>2019年8月    </center>
 
 ---
-  **<font face="黑体" size=4>目录</font>** 
+原文链接：[Economics_in_Sharded_Blockchain.pdf](https://nearprotocol.com/wp-content/uploads/2019/10/Economics_in_Sharded_Blockchain.pdf)  
 
-<!-- TOC -->
+翻译：Marco, Fengyuan &nbsp;&nbsp;&nbsp;&nbsp;校对：Sissi &nbsp;&nbsp;&nbsp;&nbsp;编辑：Buster
+
+由于本文包含较多Ketex格式的公式，推荐[戳这里查看](https://blog.csdn.net/sun_dsk1/article/details/102763595)完美编辑版。
+
+
+---
+<font face="黑体" size=4>目录</font>
+
 
 - [1 导言](#1-导言)
 - [2 背景](#2-背景)
 - [3 奖励](#3-奖励)
 - [4 交易和存储费](#4-交易和存储费)
-    - [4.1 价格计算与带宽](#41-价格计算与带宽)
+    - [4.1 算力与带宽的定价](#41-算力与带宽的定价)
     - [4.2 计算限制](#42-计算限制)
     - [4.3 状态存储的定价](#43-状态存储的定价)
 - [5 验证人](#5-验证人)
     - [5.1 验证人选择](#51-验证人选择)
     - [5.2 奖励](#52-奖励)
-    - [5.3 权益的削减](#53-权益的削减)
+    - [5.3 权益的罚没](#53-权益的罚没)
     - [5.4 权益的撤回](#54-权益的撤回)
     - [5.5 委托](#55-委托)
 - [6 开发者商业模型](#6-开发者商业模型)
@@ -29,7 +36,7 @@
 - [参考文献](#参考文献)
 - [A 常量](#a-常量)
 
-<!-- /TOC -->
+
 
 ---
 
@@ -113,133 +120,137 @@ maxCoinbase-epochFees_t & otherwise
 
 意思是，如果给定周期的总费用大于coinbase的最大值，费用本身就提供了足够的激励，该周期的coinbase实际上可以为0。否则，总的费用将使通胀减少相应的数量。
 
-
 # 4 交易和存储费
-Each transaction has a few different components that make up its cost: the cost for receiving and transmitting the transaction (bandwidth), the cost for processing (especially if this is a complicated state transition / smart contract) (CPU) and the cost for state storage (for keeping the information going forward).
 
-Because computation and bandwidth can be charged simultaneously on a per-transaction basis they can be combined into one scalar, usually known as a transaction fee, denoted as $txFee_{index}$.
+每笔交易的开销都有若干不同的部分组成：接受和发送交易的开销（带宽），处理的开销（尤其一个复杂的状态转换/智能合约时）（CPU），以及状态存储（为了一直保持信息往前更新）的开销。
 
-On the other hand, state persists between transactions and we require all validators that are responsible for a given shard to have it available. This dynamic rents itself naturally to a ’rent model’, where accounts are charged to store data for each unit of time. We describe exact mechanics of $stateRent$ in the section 4.3.
+由于算力和带宽可以与每笔交易同时收取，所以可组合成一个量，通常称为交易费（transaction fee），记做$txFee_{index}$。
 
-In section 3 we used epochF eet, which combined all of the rewards that will be awarded to validators at the end of the epoch. This value is a combination of all state rent fees and $(1 − developerPct)$ transaction fees during the epoch:
+另一方面，状态在交易之间持久地保存，我们需要负责某个分片的所有验证人都保证状态是可用的。这个动态租用本身天然就是个“租赁模型”，这里面，单位时间存储数据的费用由账户（accounts）支付。我们在4.3节详细介绍$stateRent$的机制。
+
+第3节中，我们用$epochFee_t$，代表周期（epoch）结尾时要给与验证人的所有奖励。这个值是由该周期中所有的状态租赁费和$(1 − developerPct)$的交易费组合而成：
 $$
 epochFee_t = \sum_{i=firstBlock_t}^{lastBlock_t}(1-devoloperPct) \times txFee_i + stateFee_i 
 \tag{4}$$
 
-## 4.1 价格计算与带宽
-As described above, computation and bandwidth are combined into one scalar, usually referred to as ”gas” and defines how many resources are used per transaction.
+## 4.1 算力与带宽的定价
 
-The exact relationship between 1 CPU instruction and 1 byte of bandwidth is left to implementation details, but the general idea is that total ”gas” of given transaction can be computed as:
+如上所述，算力和带宽组合成一个量，通常用“gas”表示，定义了每笔交易使用的资源数量。
+
+1条CPU指令与1个字节带宽之间的确切关系留给细节实现。一般来说，指定交易的总“gas”可以如下计算：
 $$
 gas_{tx} = numberOfCPUInstructions(tx) + \alpha \times SizeOf(tx) 
 \tag{5}$$
-Where $\alpha$ is the relative relation between a unit of computation and a unit of bandwidth. Usually this value is constant (and can be adjusted via governance if it changes drastically). And $SizeOf(tx)$ is the size of the transaction in bytes sent over the wire (i.e. bandwidth).
+这里$\alpha$代表一个单位算力与一个单位带宽之间的相对关系。通常这是个常数（如果其关系有彻底的改变，可以通过治理调整它）。$SizeOf(tx)$代表占用线路（比如：带宽）传输交易时以字节为单位的大小。
 
-Each transaction must specify the amount of gas it needs as part of the transaction data. This allows block producers to roughly estimate the amount of gas that will be used when the block will be executed before they actually do it (e.g. as they first must produce a block and only then will execute it).
+每笔交易必须在其数据中指定它需要的gas数量。这能让出块人在实际执行一个块之前就粗略估算到时会用到多少gas（比如，他们要先创建一个块，之后才执行它）。
 
-This amount can be an over-estimation of expected gas usage because the unused amount will be returned to the payer of the transaction after all transactions are completed (all receipts finished across all shards). If a transaction doesn’t attach enough gas to execute a required function, the transaction will terminate early and fail, but still charge for spent gas.
+这个数量可以比预期使用的量高一些，因为未使用的gas会在所有交易完成（所有分片上的全部收据处理完毕）后返回给交易的支付者。如果一笔交易包含的gas（在处理时）不足以执行某个方法，交易将提前终止并失败，但已使用的gas不会返还。
 
-Given the gas amount that is specified in a particular transaction, we use a system-wide gasF ee variable to calculate the fee in NEAR tokens. That variable defines the current price of 1 unit of gas in the native token.
+给定某笔交易的gas数量之后，我们使用一个系统范围的变量$gasFee$，以NEAR代币计算费用。这个变量定义了以原生代币计量的一单位gas当前价格。
 
-There are a few considerations about this variable:
+关于该变量有以下一些考量：
 
- - Different shards may have different transaction loads but because of the interaction between shards it would be extremely developer unfriendly if prices were different in different shards. For example, a transaction that touches 3-4 shards would need to pay different and unpredictable fee for each shard.
- - Dynamic sharding (defined in 2.1) provides us with a re-balancing technique that maintains a roughly even load across shards. Despite this, re-balancing is not an immediate process and thus there might be some shards that experience congestion in the short term.
- - It is good for developers and users to have a low $gasFee$ but it is even more important that it is predictable. One of the main concerns voiced by users of similar systems has been high unpredictability of the price of gas.
- - There are two things observed from the blockchain for each block $index$:
-	 - $gasLimit_{index}$, the maximum amount of gas that is allowed in each shard at that index
-	 - $gasUsed_{index}$,shard, the amount of gas actually used in each shard at that index
- - To facilitate predictable gas pricing, we define a ”price slide” $gasFee=gasFee\times(1+(\frac{gasUsed}{gasLimit}-\frac{1}{2})\times adjFee)$. Where $adjFee$ is by how much the $gasFee$ can change after each block.
+ - 不同的分片可能会有不同的交易负载，但由于存在跨分片交互，价格因分片而异对开发者来说是极度不友好的。例如，一个访问3-4个分片的交易需要支付每个分片上不同且不可预测的交易费。
+ - 动态分片（在2.1中定义）提供了再平衡技术，可以在分片间维持一个大略平衡的负载。除此以外，考虑到再平衡不是一个立即结束的过程，因此在短期内，会有一些分片遭遇堵塞。
+ - 开发者和用户希望一个低廉的$gasFee$，但是可预测性相对来说更重要。类似系统用户的主要关切之一就是gas价格的高度不可预测性。
+ - 对每个块$index$，区块链上可以观察到以下两个内容：
+	 - $gasLimit_{index}$, 该index下每个分片允许的最大gas数量（所有分片都一样）
+	 - $gasUsed_{index,shard}$, 该index下每个分片实际使用的gas数量
+ - 为了帮助预测gas价格，我们定义一个“滑动价格”：$gasPrice=gasPrice\times(1+(\frac{gasUsed}{gasLimit}-\frac{1}{2})\times adjFee)$。这里的$adjFee$定义了经过每个块后$gasPrice$可以变动多少。
 
-This is similar to the pricing model in Buterin [1] with a difference that instead of defining $minFee +$ tip, we only define $gasFee$ as a standard price.
+这与Buterin [1] 里的定价模型类似，区别是我们不用 $minPrice+$ 小费（tip），仅定义$gasPrice$作为标准价格。
 
-Because the transaction fees are distributed among all of the validators, who bear the cost of maintaining this network and
+另一种可能的攻击来自于验证人积累了大量的交易并用它们冲击区块，以此提高$gasPrice$。可以在交易上附加严格的过期时间（TTL）以解决该问题。这将使在一个长的时段内收集交易成为无用功。
 
-Another possible attack is when validators accumulate a large number of transaction to flood blocks with them and raise the $gasFee$. This problem is addressable by adding a strict expiration (TTL) on transactions. This would make collecting transactions during a prolonged period of time not relevant.
+有个需要考虑的问题是，$gasPrice$可能低于接收交易和传播它给其他验证人的边际成本（例如，带宽成本）。（尽管）验证人此时仍然会接收交易，其动机是：让交易费实际回升，保持网络运作（从长期看，这对他们以及系统中的持币者有利）以及降低他们质押资产的通胀速度。（但）为了防止这个问题（gasPrice过低），我们定义$minGasPrice$作为gas价格的底限。这也有助于防止价格计算中的取整错误（价格过低可能导致取整为0的问题）。
 
-There is one consideration that $gasFee$ can go below the minimum amount of marginal cost of accepting a transaction and propagating it to other validators (e.g. bandwidth costs). Validator are motivated to still accept transactions to actually increase the fee back as well as to maintain the network operational (which long term benefits them as well as token holders of the system) and decrease their staked capital inflation. To prevent that, we define $minGasP rice$, which is the floor for gas price. This also helps prevent rounding errors when price is calculated.
+值得强调的是，这个价格是所有分片统一的。这样就简化了网络的使用，因为现在发起一个跨分片的交易时，能提前知道价格，并且易于计算（费用）。
 
-It is important to note that this price is universal across all shards. This both simplifies the usage of the network, because now when a transaction that touches multiple shards is issued, the price of it is known ahead of time and can be easily calculated.
-
-The negative effect of such a decision is if one (or a few) shards are at capacity and the rest of the shards are empty - gas prices won’t go up. Nevertheless, we believe it is better to rely on dynamic resharding to balance shards out after a period of time to alleviate this imbalance rather than to introduce a more complex rule for adjusting gas price to account for this case.
+这种做法的负面效果是，如果一个（或若干）分片已达到其容量而其余的分片很空，gas价格不会上涨。然而，我们相信，最好是依赖于一段时间之后的动态再分片技术去平衡分片，以减轻该问题。而不是为了该问题而引入一个更复杂的机制去调整gas价格。
 
 ## 4.2 计算限制
-As the network evolves we expect that the amount of computation that the network can rocess will change as well. We generally target lower-end servers and desktops as nodes in the system, but we acknowledge that over time resources available to validators will grow. E.g. what was a high-end computer a few years ago is cheap piece of hardware now. Additionally we expect that software will continue to improve and the way we calculate the amount of resources spent on a specific task may take less real (wall) time even on the same hardware.
 
-To address this concern, we suggest that at every block producers vote on $gasLimit$ by providing a new value within ±0.1% if the previous block has $gasUsed > 0.9 ∗ gasLimit$.
+当加入网络的因素，我们预期网络可以处理的计算量也会变化。我们系统节点的主要目标是低端服务器和桌面终端，当然我们也意识到随着时间流逝，验证人可用的资源会增加。例如，几年前的一台高端计算机在现在看来不过是块廉价的硬件。另外，我们预期软件将会持续改进，即使相同的硬件，我们计算一个特定任务所占用的实际时间（wall time，linux下进程占用的实际时长）也许会变少。
 
-For example if block $index$ has $gasLimit$ of 50,000 validator can provide any value within [49,950; 50,050] range.
+为了应对该问题，我们建议每个块上，出块人投票决定$gasLimit$，在其上附加一个±0.1%的浮动范围，特别是当前一个块的$gasUsed > 0.9 ∗ gasLimit$。
 
-To determine on the node if the limit should be increased or decreased, we should measure the time that the previous block took to validate. If it took longer then 90% of expected block time, a limit should be reduced, otherwise if it took less time than expected - limit can be increased.
+例如，若第$index$个块的$gasLimit$为50,000，则验证人可以提议的新值范围是[49,950; 50,050]。
 
-This will allow for the system to dynamically find a limit that > 50%+1 of block producers can maintain.
+节点为了确定这个限制值该升还是该降，我们要衡量前一个区块的验证耗时。如果比预期出块时间的90%还长，就要降低；否则当花费的比预期时间要短，就要增加该限制值。
+
+这样就使系统能动态确定一个限制值，而超过50%+1的出块人都能接受它。
 
 ## 4.3 状态存储的定价
-Because storage is a fundamentally difference resource from computation and bandwidth (whereas those costs are one-time burdens on validators and other nodes) state space must be stored going forward across all the nodes.
 
-Because of this, storage is usually a mispriced resource. If it is paid only once at the inclusion of the transaction - the reward goes to the block producer but requires all other nodes going forward to store information. It’s especially true in the case of Bitcoin, where it’s expected that every node maintains full UTXO history but only the miner that included it receives the reward.
+由于存储是与算力、带宽（它们对验证人和其他节点是种一次性承担的开销）完全不同的资源，状态空间必须在所有节点上前向存储。
 
-To solve this problem, we follow Buterin [1] with the suggestion of state rent. For each block time each account is charged $StoragePrice × SizeOf(account)$ tokens, where $SizeOf(account)$ is size of the account in bytes.
+因此，存储资源通常会被定错价格。如果在收录交易的时候一次性收取，奖励就归属出块人而其他节点需要继续储存信息。比特币就是个特别明显的例子，每个节点都要维护全部的UTXO历史，而只有收录交易的矿工收到奖励。
 
-If account’s balance goes below $minBalance = pokeThreshold×storagePrice×SizeOf(account)$ anyone can send a special transaction that clears state from this account. As a reward the steward gets some $pokeReward$ of the remaining balance on the account. Next few rules also apply:
+为了解决这个问题，我们遵循 Buterin [1]中关于状态租赁的建议。每个账户的每个区块时间都被收取$StoragePrice × SizeOf(account)$枚代币。这里， $SizeOf(account)$是账户以字节计数的长度。
 
-- If a transaction would bring the balance below minBalance, by either moving money or increasing size of the account, this transaction considered failed.
-- If this account is staking, e.g. has $staked > 0$, we can not just remove the account. Instead for staking accounts we require $minBalance$ to be $4 × epochLength × storagePrice × SizeOf(account)$. If at the epoch boundary validator has $balance < minBalance$, their proposal or rollover will not be accepted.
+如果账户余额低于$minBalance = pokeThreshold×storagePrice×SizeOf(account)$，任何人都可以发送一个特殊交易，清除该账户的状态。作为奖励，该人获得一些来自遗留余额的$pokeReward$作为奖励。并采用下述一些规则：
 
-Instead of updating balance every step, which is impractical, instead we update the accounts only when they are already changed by some transaction:
+- 若某笔交易将导致账户余额低于$minBalance$，不管是因为转出资产还是增加账户规模，该交易都被视为失败。
+- 如果账户有权益抵押，也即，$staked > 0$，就不能仅仅移除账户。取而代之，我们要求一个权益抵押账户的$minBalance$为$minBalance$ to be $4 × epochLength × storagePrice × SizeOf(account)$。如果再周期的边界，验证人的余额$balance < minBalance$，就取消它的验证人参选或轮换。
 
-- Each account has a $StoragePaidAt$ field.
-- Current balance is then calculated $balance−StoragePrice×SizeOf(account)×(curBlock−StorageP aidAt)$.
-- When account is modified, we recompute the size of the state and update $balance$ given formula above, setting $StoragePaidAt$ at the current block.
+每次（按块收取状态租赁费）都更新余额是不现实的，我们只在余额因某个交易产生变动时，才更新账户：
 
-Even though cost on storage may change over time, this is a slow process and can be addressed by a network participants decision (through a governance process).
+- 每个账户建立一个字段$StoragePaidAt$。
+- 当前余额这样计算：$balance−StoragePrice×SizeOf(account)×(curBlock−StorageP aidAt)$
+- 更新账户时，我们重新计算状态的尺寸，按上面的公式更新$balance$，并更新$StoragePaidAt$为当前块。
 
-On the other hand, there is volatility in the price between a native token and underlying price that validators pay (and users/developers expect).
+尽管存储的开销会随着时间变化，但这是个缓慢的过程，并可被网络参与者的决策（通过一个治理流程）修改。
 
-In this work, we set $StoragePrice$ as constant and postpone exploration to address volatility to future work.
+另一方面，原生代币的价格、验证人实际支付的价格以及用户/开发者的预期，它们之间的关系并不稳定。
 
-Worth mentioning also a way to hibernate account by collapsing state of the account to just a Merkle root of the state tree. Then if an account needs to be restored, the original data can be presented. Merkle root is enough to verify that information match and restore data back in its place. At the moment we will not be adding this functionality but expect this to be added soon after release.
+目前的工作中，我们将$StoragePrice$定为常量，不稳定性的问题留待将来解决。
+
+值得一提的是，也有一种休眠账户的方式。即折叠其状态至默克尔树根。如果后面需要恢复该账户，可以取出原始数据（通过遍历历史区块数据等方式），默克尔树根足够验证那些信息，将数据恢复过来。目前，我们并没有该功能，但预期会在发布后不久添加进去。
 
 # 5 验证人
-Validators play a core function in any ledger by collecting transactions, ordering them, computing new state (by running smart contracts) and provide data to other participants in the system.
 
-In Proof-of-Stake model, security and Sybil resistance of the system is provided via ”staking” mechanism, thus requiring validators be Token Holders, maintaining a balance on their account.
+验证人在任何区块账本系统中都扮演着核心角色。他们收集和排序交易，计算新状态（执行智能合约）以及为系统中的其他参与者提供数据。
 
-Additionally because validators are selected for a period time, they are required to be online. In this design we require just to be online over some threshold $onlineThreshold$.
+在PoS模型中，系统的安全性和女巫攻击抗性都来自“权益抵押”机制。这就要求验证人是持币者，并在账户中保持一定数量的余额。
+
+另外，验证人在被选中的那段时间中需要保持在线。在（夜影）设计中，我们要求验证人在线时间超过该阈值$onlineThreshold$。
 
 ## 5.1 验证人选择
-Validator selection is done via an auction mechanism. To become a validator, the node must send a signed transaction which contains information about the amount they want to stake and a new public key that blocks will be signed with. This key can be separate from the keys used to access the user’s account. This allows the decoupling of custody of assets from validation and enables other use cases, for example delegation described in section 5.5.
 
-The inclusion of these staking transactions in a block is disincentived for the currently selected group of validators because it effectively increases their competition. We propose to add additional incentive for current validators to include this transaction - new staker defines $inclusionFee\%$ as part of their transaction, which defines how much of their next day’s reward will be awarded to block producer that included it.
+通过一个竞拍机制选择验证人。要成为一个验证人，节点必须发送一个签名交易，包含他们要抵押的权益数量以及一个新的用来签名区块的公钥。该秘钥可以独立于用户账户的访问秘钥。这就能将验证工作和资产保管解耦，还能支持其他用例场景，例如，5.5节介绍的委托。
 
-Staking transactions are collected during the $epochLength$ number of blocks. At the end of the epoch $T − 1$ everyone on the network run validator selection process (auction) to determine validators for the epoch $T + 1$. Because as part of the validator selection process, we also shuffle validators between shards, it is required that validators assignment is known in advance to perform shard state sync. As network grows, state sync will start taking measurable time so we calculate validators an epoch before.
+对当前的验证人集体来说，收集这些权益抵押交易是没有动力的。因为这实际上加剧了他们的竞争。我们为当前验证人收集这些交易提供额外的激励：新的权益抵押人在交易中定义$inclusionFee\%$，表明下一次将把自身获得奖励的该比例给与收集该交易的出块人。
 
-Given collected set of proposals and validators already computed for epoch $T$, the next procedure is done.
+以一个周期作为收集权益抵押交易的时间窗口。在周期$T − 1$的末尾，网络上的每个人都执行验证人选择过程（竞拍），以决定周期$T + 1$的验证人。因为，作为验证人选择过程的一部分，我们也会在分片间混洗（shuffle）验证人，这就要求验证人预先知道其指派的分片以执行分片状态同步。随着网络的增长，状态同步将花费相当的时间，所以我们提前一个周期计算验证人。
 
-- Convert validators for epoch $T$ into proposals as well, with their current stake as the bid. If there is competing proposal from the same validator - take it’s value.
-- Remove proposals of all the validators that were online less than $onlineThreshold \%$ or explicitly decided to stop validate.
-- Find the $seatPrice$ threshold, such that sum of all stake above $seatPrice$ is greater than number of seats:
+给定收集到的参选人集合，加上已经成为周期$T$的验证人，进行以下过程。
+- 周期$T$的验证人也视为参选人，将其当前抵押的权益视为参选权益，如果有验证人提交了更高的参选权益，就用其参选权益。
+- 对于那些在线时间低于$onlineThreshold \%$，或明确表示退出验证的参选人，移除他们。
+- 确定阈值$seatPrice$，使所有抵押权益高于该阈值的抵押权益之和，大于（验证人）席位数：
 $$
-seatPrice = \argmin_{x\in V} \bigg ( \sum_{v\in V} \lfloor \frac{stake_v}{x} \rfloor \geq numSeats \bigg) 
+seatPrice = \argmax_{x\in V} \bigg ( \sum_{v\in V} \lfloor \frac{stake_v}{x} \rfloor \geq numSeats \bigg) 
 \tag{6}$$
-- For each validator who has $stake_v \geq seatPrice$, assign them $\lfloor \frac{stake_v}{seatPrice}\rfloor$ seats and randomly shuffle this set.
-- If the resulting array has more than $numSeats$, discard the rest.
+- 对每个满足$stake_v \geq seatPrice$的验证人，为其分配$\lfloor \frac{stake_v}{seatPrice}\rfloor$个席位，并随机混洗该集合。
+- 若结果个数仍然超过$numSeats$，则丢弃多余的。
 
-The resulting ordered array of validator assignments, is then used to split validators into two groups: block/chunk producers and ”hidden” validators.
+结果得到一个有序的验证人指派序列，接下来将其分为两组：出块人/出段人，和“隐藏的”验证人。
 
 ## 5.2 奖励
-To compute individual reward per validator, first need to compute total reward of all validators per epoch, as percentage of $epochReward$:
+
+为了计算每个验证人的个体奖励，先要计算每个周期所有验证人的总奖励，是一个百分比形式的$epochReward$：
 $$
 totalValidatorReward_t = (1-prtocolPct) \times (coinbaseRewards_t + epochFees_t) 
 \tag{7}$$
 
-The $totalValidatorReward$ is then split between the individual validator in the same proportions if they were a block producer or a ”hidden” validator. This also means there is no difference in which shards was this node participating (for ”hidden” validator we may never find out).
+然后在验证人中按相同比例分配$totalValidatorReward$，不管他们实际是出块人还是“隐藏的”验证人。这也意味着，节点参与分片的不同也不会带来差异（对“隐藏的”验证人而言，我们也许永远也不知道其参与的分片）。
 
-The validator reward does get adjusted by the % of their online participation in the epoch and the number of seats they hold. The validator reward for validator $v$ is then:
+验证人奖励确实会被该周期其在线时间百分比，以及他所持有的的席位数所影响。验证人$v$的奖励为：
 $$
-validator_vReward_t = uptime_t^v \times totalValidatorReward_t \times numSeats_v 
+validator_vReward_t = uptime_t^v \times \frac{totalValidatorReward_t}{numValidators} \times numSeats_v 
 \tag{8}$$
-Where $numSeats$ is number of seats this validator got based on their stake,e.g. $stake_v/seatPrice$. And $uptime_v$ is calculated in the next way:
+
+这里$numSeats$是该验证人基于其抵押权益而获得的席位数：$stake_v/seatPrice$。而在线时间$uptime_v$如下计算：
 $$
 uptime_t^v = 
 \begin{cases}
@@ -247,38 +258,37 @@ uptime_t^v =
 \frac{uptimePct_t^v-onlineThreshold}{1-onlineThreshold} & otherwise
 \end{cases} 
 \tag{9}$$
-Where $uptimeP c_t^v$ is percentage of required blocks that this validator produced or validator signed (i.e. uptime). Which means that if given validator doesn’t produce enough blocks in the epoch $t$, they will not receive any reward and will be removed from the validator pool for the upcoming epoch $t + 2$.
 
-Rewards are automatically re-staked, by adding for any given validator the $validator_vReward_t$ to their $stake_v$ balance for upcoming epoch.
+这里，$uptimeP c_t^v$是需要由该验证人签名创建或验证的区块数百分比（也就是在线时间uptime）。这意味着，如果该验证人在周期$_t$没有创建足够的区块，就不会受到任何奖励，并且会被移出即将到来的周期$_{t+2}$的验证人池。
 
-## 5.3 权益的削减
-Stake provides security for two reasons:
+奖励是自动再抵押的，将在下个周期，把$validator_vReward_t$加到指定验证人已有的$stake_v$余额上。
 
-- Sybil attack resistance to prevent a single entity from taking over all the spots in the validator pool and controlling block production.
-- Preventing misbehavior because it causes a certain amount of staked tokens to be slashed (re-distributed among nodes which reported the misbehavior).
+## 5.3 权益的罚没
+权益抵押基于以下两点提供安全性：
+- 抗女巫攻击，防止单个实体接管所有的验证人席位并控制出块活动。
+- 防止恶意行为，因为它将罚没一定量的权益抵押代币（重新分配给报告恶意行为的节点）。
 
-We define misbehavior as actions that can be proven cryptographically:
+我们定义的恶意行为是可以被密码学证明的：
+- 在相同高度上进行双签
+- 签署包含无效后继状态根的块（即，无效的状态转换）。
 
-- Double signing a block at the same height.
-- Signing a block with an invalid post state root (i.e. invalid state transition)
+注意，我们不对掉线的节点进行惩罚。如果验证人参与出块少于$onlineThreshold$，则在周期结尾，它会自动被踢出下一轮验证人竞拍的轮换池。
 
-Note that we are not slashing for a validator that went offline. Validators will be kicked out automatically at the end of the epoch from the rollover pool for the next validator selection auction if they have participated in block production/validation less than $onlineThreshold$.
-
-The incentive for a validator to stay online above $onlineThreshold$ is defined as an opportunity cost of losing their spot in the validator pool, as it will result in losing rewards for at least 2 epochs. Above the $onlineThreshold$ percentage, the incentive for validator is mostly to receive more reward (as detailed in equation 8 as validator misses more blocks - their rewards reduces).
+为了不至于因丢掉验证人池的席位而导致的机会成本，验证人倾向于保持在线时间高于$onlineThreshold$。否则将导致至少损失2个周期的奖励。高于百分之$onlineThreshold$后，验证人的激励主要来自于（希望）获取更多的奖励（正如公式8所示，验证人漏的块越多，奖励就越少）。
 
 ## 5.4 权益的撤回
-At any point, validator can issue a transaction to remove themselves from validator pool (same works for changing the amount of stake). This transaction gets recorded on the blockchain. At the $EPOCH_T$ when the new validator selection auction is been performed, we account for this transaction as a proposal for 0 tokens.
+任何时候，验证人都可以发起一笔交易，把自己撤出验证人池（与更改权益抵押数量的方法相同）。这笔交易记录上链。在周期$_T$，当执行新的验证人竞拍时，我们将这种交易视为以0权益抵押的参选。
 
-After the auction is done, the validator who submitted this 0 token bid will not be in the validators for $EPOCH_{T+2}$. The stake will be returned to their account at $EPOCH_{T+3}$.
+竞拍结束后，提交0枚代币进行权益抵押的验证人就不会在周期$_{T+2}$的验证人集体中。之前抵押的权益会在周期$_{T+3}$返回到他们的账户上。
 
-As mentioned in section 5.3, if a validator is a block producer and didn’t produce enough blocks, or as ”hidden” validator didn’t provide enough confirmation signatures, its stake will be automatically withdrawn and the validator will be removed from the next auction.
+如5.3节所述，如果一个验证人，作为出块人却没有创建足够的区块，或作为“隐藏的”验证人没有提供足够的确认签名，它抵押的权益会自动撤回，验证人身份也会在下轮竞拍中移除。
 
 ## 5.5 委托
-Participating in validation directly benefits token holders both by providing those validators with rewards and indirectly by attracting more participants to join the network because it has greater economic security. Not all capital holders, though, have the ability or desire to run validators.
+参与验证工作直接使持币者受益，一方面作为验证人有奖励；另一方面，间接吸引更多人参与进网络，因为它更有经济保障。然而，不是所有的持币者有能力或意愿去做验证人。
 
-Instead of defining a specific protocol for delegation, the basic tools provided by the smart contract platform allow for others to create staking smart contracts. For example, a validator can create a smart contract that defines rules of capital allocation and reward distribution alongside participating in staking. This could be used to allow other token holders to delegate their stake to the contract creator.
+并没与为委托定义一个特定协议，我们的智能合约平台提供的基础工具允许其他人创建权益抵押智能合约。例如，一个验证人可以创建这样一个智能合约，定义资本的位置以及参与权益抵押而获得奖励的分配。这就能让其他持币者委托他们的权益给合约创建人（以参与PoS挖矿）。
 
-This same pattern has a wide range of potential uses, including so-called ”derivative stake” (see for more details [3]).
+相同的模式有着广泛的潜在用途，包括一个所谓的“衍生权益”（详情见参考文献[3]）。
 
 # 6 开发者商业模型
 There are few ways applications and their developers can have business models on the blockchain:
@@ -325,13 +335,13 @@ For reference, we provide Table 1 as an example values of constants that NEAR Pr
 $initialSupply$|初始供应量  | 1,000,000,000 NEAR
 $maxInflation$  |最大通胀| 0.05
 $blockTime$  |区块时间| 1 秒
-$numEpochsPerYear$  |每年的纪元数| 730
-$onlineThreshold$  || 90%
-$pokeTheshold$  || 500
+$numEpochsPerYear$  |每年的周期数| 730
+$onlineThreshold$  |在线时间阈值| 90%
+$pokeTheshold$  |清理阈值| 500
 $storagePrice$  |存储价格| $7e^{−15}$ NEAR 每字节每块
-$protocolPct$  || 10%
-$developerPct$  || 30%
-$adjFee$  || 0.001
+$protocolPct$  |协议直属百分比| 10%
+$developerPct$  |开发者直属百分比| 30%
+$adjFee$  |费用调整系数| 0.001
 
 表 1：系统中的重要常量(随时调整)
 
