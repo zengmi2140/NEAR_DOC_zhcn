@@ -291,24 +291,16 @@ uptime_t^v =
 相同的模式有着广泛的潜在用途，包括一个所谓的“衍生权益”（详情见参考文献[3]）。
 
 # 6 开发者商业模型
-There are few ways applications and their developers can have business models on the blockchain:
-
- 1. Users pay a transaction fee and there is an extra that developers add to it.
- 2. Users buying some items (such as NFTs or token passes).
- 3. Users paying a flat fee via subscription or another type of charging model.
-
-NEAR already makes it easier for 2 and 3rd option via AccessKeys and different types of interactions between application and user
-
-On the other hand, in the case of charging a fee on top of the transaction, developers might end up in the situation where their contract is forked with the removed fee. To balance this and the requirement for applications to pay storage rent on the data, we add ”developer fee” - a portion of transaction fee does directly to the application balance.
 应用程序及其开发人员可以在区块链上拥有以下几种业务模型：
 
-  1.用户支付交易费，开发人员部分补贴。
-  2.用户购买某些物品（例如NFT或token通行证）。
-  3.用户通过订阅或其他类型的收费模式支付固定费用。
+ 1. 用户支付交易费，开发人员部分补贴。
+ 2.用户购买某些物品（例如NFT或token通行证）。
+ 3. 用户通过订阅或其他类型的收费模式支付固定费用。
 
 NEAR已经通过开发AccessKeys功能使得采用第二和第三类模型以及其他应用程序和用户之间不同类型的交互变得更加容易。
 
 另一方面，如果使用建立在交易之上的收费模型，开发人员可能最终会遇到这样的情况，即他们的合约在被付费以后又因为分叉而使得交易无效了。 为了平衡这一点并考虑应用程序为链上数据支付存储租金的需求，我们添加了“开发者费用”——将交易费用的一部分直接计入应用程序的账户。
+
 $$
 developerReward_{index}^{account} = developerPct \times txFee_{index}^{account}
 \tag{10}$$
