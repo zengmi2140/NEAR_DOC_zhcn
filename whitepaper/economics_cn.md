@@ -304,7 +304,7 @@ NEAR已经通过开发AccessKeys功能使得采用第二和第三类模型以及
 $$
 developerReward_{index}^{account} = developerPct \times txFee_{index}^{account}
 \tag{10}$$
-Where $txFee^{account}_{index}$ is total amount of gas fees that were used by given $account$ at block $index$. The $developerReward$ are allocated by per block per account, as they can be efficiently done every time the transaction or receipts is being processed by the contract.
+$txFee^{account}_{index}$ 是指定 $account$在特定 $index$的上的gas费用总开销。 The $developerReward$ are allocated by per block per account, as they can be efficiently done every time the transaction or receipts is being processed by the contract.
 
 There are different ways this money can be allocated from there and it’s up to a developer of the application to decide how to distribute it while maintaining an application.
 
