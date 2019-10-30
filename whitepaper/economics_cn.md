@@ -355,13 +355,12 @@ $adjFee$  |费用调整系数| 0.001
 表 1：系统中的重要常量(随时调整)
 
 
-    |计算 (100ms/128MB) |带宽|存储
--------- |----| -----|-----
-AWS EC2|$0.000000144 (1) ||
-AWS Lambda|  $0.000000208 (2) ||
-AWS S3|-||
-Heroku| $0.000000964 (3) ||
-Ethereum(volatile)| $0.1 (5) ||
-Ethereum proposed rent state|-||
-EOS(volatile)| $0.00016 (7)||
+|    |计算 (100ms/128MB) |带宽|存储|
+|AWS EC2|$0.000000144 (1) |||
+|AWS Lambda|  $0.000000208 (2) |||
+|AWS S3|-|||
+|Heroku| $0.000000964 (3) |||
+|Ethereum(volatile)| $0.1 (5) |||
+|Ethereum proposed rent state|-|||
+|EOS(volatile)| $0.00016 (7)|||
 
