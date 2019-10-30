@@ -357,11 +357,11 @@ $adjFee$  |费用调整系数| 0.001
 
 |    |计算 (100ms/128MB) |带宽|存储|
 |-------- |----| -----|-----|
-|AWS EC2|$0.000000144 (1) |||
-|AWS Lambda|  $0.000000208 (2) |||
-|AWS S3|-|||
-|Heroku| $0.000000964 (3) |||
-|Ethereum(volatile)| $0.1 (5) |||
-|Ethereum proposed rent state|-|||
-|EOS(volatile)| $0.00016 (7)|||
+|AWS EC2|$0.000000144 (1) | $0.09/GB |-|
+|AWS Lambda|  $0.000000208 (2) | $0.09/GB |-|
+|AWS S3|-| 0.02−0.09/GB | $0.02 / GB /月|
+|Heroku| $0.000000964 (3) |-| $0.7815 GB /月 (4)|
+|Ethereum(volatile)| $0.1 (5) |...|-|
+|Ethereum proposed rent state|-|-| ∼$1342 / GB / 月 (6)|
+|EOS(volatile)| $0.00016 (7)| $0.26/GB (8) | ∼$888 / GB /月(9) |
 
