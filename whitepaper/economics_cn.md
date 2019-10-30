@@ -312,7 +312,6 @@ $txFee^{account}_{index}$ 是指定 $account$在特定 $index$的上的gas费用
 通过此奖励计划，我们还调整了开发人员的激励措施，以吸引平台上更多用户进行更多交易。
 
 # 7 协议财库
-To fund continues development of the protocol and ecosystem we allocate $protocolPct$ percent of the epoch rewards from section 3 to the designated account. The specifics of governance and management of this account are outside of the scope of this paper.
 
 为了给协议和生态系统的持续发展提供资金，我们将按照第3节中讨论的数额为$ protocolPct $比例的周期总奖励分配给指定帐户。 该帐户的治理和管理细节不在本文讨论范围之内。
 
@@ -322,9 +321,10 @@ protocolReward_t = protocolPct \times (coinbaaseReward_t + epochFee_t)
 $$
 
 # 8 未来工作
-This design provides general guidance to enable a balance between validator incentives  versus developers and users requirements to have stable and predictable pricing of the utility usage. We expect there will need to be more research in the area of aligning incentives between various competing parties to provide a balanced system that is at the same time not subject to be gamed.
 
-One of the directions of future work we suggest is an investigation of using algorithmic stable tokens for pricing resources, using the stake as collateral to provide this stable token a collateral debt position.
+此设计提供了一种一般性指导，以使验证者激励与开发者和用户需求之间实现平衡，进而为广泛性的应用提供稳定性和可预测的价格机制。我们希望对各利益方之间的激励机制进行更多研究，以提供一个平衡的系统，同时又不引入零和或负和博弈问题。
+
+我们建议未来的方向是研究使用算法稳定代币来为资源定价，使用stake来作为抵押品为该稳定代币提供抵押品债务头寸。
 
 # 参考文献
 [1] Vitalik Buterin. Blockchain resource pricing. https://github.com/ethereum/research/blob/master/papers/pricing/ethpricing.pdf, 2019.
@@ -333,7 +333,8 @@ One of the directions of future work we suggest is an investigation of using alg
 [4] Alex Skidanov and Illia Polosukhin. Nightshade: Near protocol sharding design. https://nearprotocol.com/downloads/Nightshade.pdf, 2019.
 
 # A 常量
-For reference, we provide Table 1 as an example values of constants that NEAR Protocol is planning to use while using economics design described in this paper.
+
+作为参考，我们提供表1作为NEAR协议在本文所述的经济学设计中使用的常数的示例值。
 
 名称     | 意义|值
 -------- |----| -----
