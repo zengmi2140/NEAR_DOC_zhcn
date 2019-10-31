@@ -35,7 +35,7 @@
 - [8 未来工作](#8-未来工作)
 - [参考文献](#参考文献)
 - [A 常量](#a-常量)
-
+- [B 价格比对](#b-价格比对)
 
 
 ---
@@ -291,44 +291,53 @@ uptime_t^v =
 相同的模式有着广泛的潜在用途，包括一个所谓的“衍生权益”（详情见参考文献[3]）。
 
 # 6 开发者商业模型
-There are few ways applications and their developers can have business models on the blockchain:
+应用程序及其开发人员可以在区块链上拥有以下几种业务模型：
 
- 1. Users pay a transaction fee and there is an extra that developers add to it.
- 2. Users buying some items (such as NFTs or token passes).
- 3. Users paying a flat fee via subscription or another type of charging model.
+ 1. 用户支付交易费，开发人员部分补贴。
+ 2. 用户购买某些物品（例如NFT或token通行证）。
+ 3. 用户通过订阅或其他类型的收费模式支付固定费用。
 
-NEAR already makes it easier for 2 and 3rd option via AccessKeys and different types of interactions between application and user
+NEAR已经通过开发AccessKeys功能使得采用第二和第三类模型以及其他应用程序和用户之间不同类型的交互变得更加容易。
 
-On the other hand, in the case of charging a fee on top of the transaction, developers might end up in the situation where their contract is forked with the removed fee. To balance this and the requirement for applications to pay storage rent on the data, we add ”developer fee” - a portion of transaction fee does directly to the application balance.
+另一方面，如果使用建立在交易之上的收费模型，开发人员可能最终会遇到这样的情况，即他们的合约在被付费以后又因为分叉而使得交易无效了。 为了平衡这一点并考虑应用程序为链上数据支付存储租金的需求，我们添加了“开发者费用”——将交易费用的一部分直接计入应用程序的账户。
+
 $$
 developerReward_{index}^{account} = developerPct \times txFee_{index}^{account}
 \tag{10}$$
-Where $txFee^{account}_{index}$ is total amount of gas fees that were used by given $account$ at block $index$. The $developerReward$ are allocated by per block per account, as they can be efficiently done every time the transaction or receipts is being processed by the contract.
 
-There are different ways this money can be allocated from there and it’s up to a developer of the application to decide how to distribute it while maintaining an application.
+$txFee^{account}_{index}$ 是指定 $account$在特定 $index$的上的gas费用总开销。$ developerReward $是按每个帐户的每个块分配的，因为每次合同处理交易或收据（跨片）时，它们都可以有效地结算。
 
-With this reward program, we also align incentives of developers to attract more users on the platform who will transact more.
+分配这笔钱的方法有多种，这取决于应用程序的开发人员来如何在维护应用程序的同时进行规划。
+
+通过此奖励计划，我们还调整了开发人员的激励措施，以吸引平台上更多用户进行更多交易。
 
 # 7 协议财库
-To fund continues development of the protocol and ecosystem we allocate $protocolPct$ percent of the epoch rewards from section 3 to the designated account. The specifics of governance and management of this account are outside of the scope of this paper.
+
+为了给协议和生态系统的持续发展提供资金，我们将按照第3节中讨论的数额为$ protocolPct $比例的周期总奖励分配给指定帐户。 该帐户的治理和管理细节不在本文讨论范围之内。
+
 $$
 protocolReward_t = protocolPct \times (coinbaaseReward_t + epochFee_t)
 \tag{11}
 $$
 
 # 8 未来工作
-This design provides general guidance to enable a balance between validator incentives  versus developers and users requirements to have stable and predictable pricing of the utility usage. We expect there will need to be more research in the area of aligning incentives between various competing parties to provide a balanced system that is at the same time not subject to be gamed.
 
-One of the directions of future work we suggest is an investigation of using algorithmic stable tokens for pricing resources, using the stake as collateral to provide this stable token a collateral debt position.
+此设计提供了一种一般性指导，以使验证者激励与开发者和用户需求之间实现平衡，进而为广泛性的应用提供稳定性和可预测的价格机制。我们希望对各利益方之间的激励机制进行更多研究，以提供一个平衡的系统，同时又不引入零和或负和博弈问题。
+
+我们建议未来的方向是研究使用算法稳定代币来为资源定价，使用stake来作为抵押品为该稳定代币提供抵押品债务头寸。
 
 # 参考文献
 [1] Vitalik Buterin. Blockchain resource pricing. https://github.com/ethereum/research/blob/master/papers/pricing/ethpricing.pdf, 2019.
+
 [2] Miles Carlsten, Harry Kalodner, S. Matthew Weinberg, and Arvind Narayanan. On the instability of bitcoin without the block reward. In Proceedings of the 2016 ACM SIGSAC Conference on Computer and Communications Security, CCS ’16, pages 154–167, New York, NY, USA, 2016. ACM. ISBN 978-1-4503-4139-4. doi: 10.1145/2976749.2978408. URL http://doi.acm.org/10.1145/2976749.2978408.
+
 [3] Illia Polosukhin. Staking and delegation via smart contract. https://research.nearprotocol.com/t/staking-and-delegation-via-smart-contract/43, 2019.
+
 [4] Alex Skidanov and Illia Polosukhin. Nightshade: Near protocol sharding design. https://nearprotocol.com/downloads/Nightshade.pdf, 2019.
 
 # A 常量
-For reference, we provide Table 1 as an example values of constants that NEAR Protocol is planning to use while using economics design described in this paper.
+
+作为参考，我们提供表1作为NEAR协议在本文所述的经济学设计中使用的常数的示例值。
 
 名称     | 意义|值
 -------- |----| -----
@@ -345,7 +354,38 @@ $adjFee$  |费用调整系数| 0.001
 
 表 1：系统中的重要常量(随时调整)
 
-|  |  |
-|--|--|
-|  |  |
+
+|    |计算 (100ms/128MB) |带宽|存储|
+|-------- |----| -----|-----|
+|AWS EC2|$0.000000144 (1) | $0.09/GB |-|
+|AWS Lambda|  $0.000000208 (2) | $0.09/GB |-|
+|AWS S3|-| 0.02−0.09/GB | $0.02 / GB /月|
+|Heroku| $0.000000964 (3) |-| $0.7815 GB /月 (4)|
+|Ethereum(volatile)| $0.1 (5) |...|-|
+|Ethereum proposed rent state|-|-| ∼$1342 / GB /月 (6)|
+|EOS(volatile)| $0.00016 (7)| $0.26/GB (8) | ∼$888 / GB /月(9) |
+
+表 2：各云平台与区块链平台资源价格比对
+
+# B 价格比对
+
+表2粗略比较了不同计算平台的资源价格（截至2019年4月）。在计算时本文使用了以下假设：
+
+1. 具有1Gi RAM和2个CPU的t3.micro EC2-每小时$ 0.0104 =⇒每100ms $ 0.000000288 =⇒并行运行。
+
+2. AWS特别是AWS Lambda的定价非常复杂，见：https： //medium.com/@zackbloom/serverless-pricing-and-costs-aws-lambda-and-lambda-edge-169bfb58db75 
+
+3. 一个简单的dyno $ 25 /每月，每月100ms =⇒25,920,000个请求。 
+
+4. 标准0-64GB存储，每月50美元=⇒0.7815美元/ GB /月。 
+
+5. 每天500ETH的交易费，150美元的ETH，每天70万笔交易。总奖励的3％（截至2019/04/11），并非真正占100ms（可能会花费更多）。
+
+6. 建议按1e-7 ETH /字节/年的平均存储价格=⇒$ 1342 / GB /月。
+
+7. 预留$ 0.013毫秒/天。以1天$ 1.3的价格出租。
+
+8. 预留$ 0.002 USD / KiB /天=⇒$ 2097 GB /天。以4.5％APR的价格支付1天的费用$ 0.26 。
+
+9. 购买价格$ 0.226 / KiB =⇒$ 236,978 / GB。出租30天，利率4.5％APR $ 888.67。
 
