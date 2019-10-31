@@ -305,7 +305,7 @@ $$
 developerReward_{index}^{account} = developerPct \times txFee_{index}^{account}
 \tag{10}$$
 
-$txFee^{account}_{index}$ 是指定 $account$在特定 $index$的上的gas费用总开销。$ developerReward $是按每个帐户的每个块分配的，因为每次合同处理交易或收据（跨片）时，它们都可以有效地结算。
+$txFee^{account}_{index}$ 是指定 $account$在特定 $index$上的gas费用总开销。$ developerReward $是按每个帐户的每个块分配的，因为每次合同处理交易或收据（跨片）时，它们都可以有效地结算。
 
 分配这笔钱的方法有多种，这取决于应用程序的开发人员来如何在维护应用程序的同时进行规划。
 
